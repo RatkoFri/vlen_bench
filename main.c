@@ -110,9 +110,9 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     }
 
     asm volatile(" "vload" v8, (%0), v0.t" : : "r"(a));
-    asm volatile(" "vload" v9, (%0), v0.t" : : "r"(b));
-    asm volatile("vfadd.vv v10, v8, v9, v0.t");
-    asm volatile(" "vstore" v10, (%0), v0.t" : : "r"(result));  
+    asm volatile(" "vload" v16, (%0), v0.t" : : "r"(b));
+    asm volatile("vfadd.vv v16, v8, v16, v0.t");
+    asm volatile(" "vstore" v16, (%0), v0.t" : : "r"(result));  
 
 }
 
