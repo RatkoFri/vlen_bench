@@ -82,6 +82,33 @@ void scalar_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     }
 }
 
+// function for calculating median value
+double calculate_median(double *arr, int n) {
+    double median;
+    double *sorted = (double *)malloc(n * sizeof(double));
+    memcpy(sorted, arr, n * sizeof(double));
+    
+    // Simple bubble sort
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (sorted[j] > sorted[j+1]) {
+                double temp = sorted[j];
+                sorted[j] = sorted[j+1];
+                sorted[j+1] = temp;
+            }
+        }
+    }
+    
+    if (n % 2 == 0) {
+        median = (sorted[n/2 - 1] + sorted[n/2]) / 2.0;
+    } else {
+        median = sorted[n/2];
+    }
+    
+    free(sorted);
+    return median;
+}
+
 // RVV vector array addition using inline assembly
 void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     // RVV assembly implementation
@@ -188,6 +215,7 @@ int main(int argc, char *argv[]) {
     double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
 
     // === Comparison ===
+    /*
     printf("======================================\n");
     printf("Performance Comparison\n");
     printf("======================================\n");
@@ -196,7 +224,10 @@ int main(int argc, char *argv[]) {
     
     double speedup = mean_scalar_time / mean_rvv_time;
     printf("Speedup (Scalar/RVV): %.2f x\n", speedup);
+    */
 
+    double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
+    printf("Median RVV Time: %.6f ms, array size: %d\n", median_rvv_time, size);
     // Verify results match (optional)
     int mismatch = 0;
     for (int i = 0; i < size; i++) {

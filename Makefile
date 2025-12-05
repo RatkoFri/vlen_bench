@@ -41,7 +41,7 @@ CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FL
 #CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -march=rv64g -mepi  -g $(NO_AUTOVEC) -mcpu=avispado $(SDV_TRACE_INCL)  -fno-vectorize  -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -Drvv=$(rvv)
 #CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -march=$(ARCH) -Isrc
 
-TARGET_RVV = $(BUILD_DIR)/spmv_rvv
+TARGET_RVV = $(BUILD_DIR)/vec_add
 LDFLAGS =
 LDLIBS    := -lgtest -lgtest_main -pthread
 
