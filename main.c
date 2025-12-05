@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
         
         rvv_times[i] = (end - start) / 1e6; // Convert to milliseconds
         total_rvv_time += rvv_times[i];
-        printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
+        //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
     double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
