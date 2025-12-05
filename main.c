@@ -1,0 +1,221 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include <math.h>
+#include <stdio.h>
+
+// Usage:
+// Pass -DUSE_DOUBLE to the compiler to use double precision.
+// Otherwise, single precision (float) will be used.
+
+#ifdef USE_DOUBLE
+typedef double fp_t;
+#define FP_TYPE "double"
+#define FP_EPSILON 1e-12
+#define FP_FMT "%.12lf"
+#define FP_SCANF_FMT "%lf"
+#define fp_sqrt sqrt
+#define fp_abs fabs
+#define fp_pow pow
+#define fp_exp exp
+#define fp_log log
+#define fp_sin sin
+#define fp_cos cos
+#define fp_tan tan
+#define index_t uint64_t
+#define INDEX_FMT "%zu"
+#define shift 3 
+#define vtype "e64"
+#ifdef USE_RVV0_7
+#define vload "vle.v"
+#define vstore "vse.v"
+#define vlind "vlxe.v"
+#define tail_mask " "
+#else
+#define vload "vle64.v"
+#define vstore "vse64.v"
+#define vlind "vluxei64.v"
+#define tail_mask ", ta, ma"
+#endif
+#else
+typedef float fp_t;
+#define FP_TYPE "float"
+#define FP_EPSILON 1e-6f
+#define FP_FMT "%.6f"
+#define FP_SCANF_FMT "%f"
+#define fp_sqrt sqrtf
+#define fp_abs fabsf
+#define fp_pow powf
+#define fp_exp expf
+#define fp_log logf
+#define fp_sin sinf
+#define fp_cos cosf
+#define fp_tan tanf
+#define index_t uint32_t
+#define INDEX_FMT "%u"
+#define vtype "e32"
+#define shift 2 
+#ifdef USE_RVV0_7
+#define vload "vle.v"
+#define vstore "vse.v"
+#define vlind "vlxe.v"
+#define tail_mask " "
+#else
+#define vload "vle32.v"
+#define vstore "vse32.v"
+#define vlind "vluxei32.v"
+#define tail_mask ", ta, ma"
+
+#endif
+
+#endif
+
+
+#define NUM_ITERATIONS 5
+
+// Scalar array addition
+void scalar_add(fp_t *a, fp_t *b, fp_t *result, int size) {
+    for (int i = 0; i < size; i++) {
+        result[i] = a[i] + b[i];
+    }
+}
+
+// RVV vector array addition using inline assembly
+void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
+    // RVV assembly implementation
+    // This uses RISC-V Vector extension instructions
+    int avlen, req_vlen, max_vlen; // Requested vector length in bits 
+    req_vlen = -1;
+    asm volatile("vsetvli %0, %1, "vtype", m1 "tail_mask" " : "=r"(max_vlen) : "r"(req_vlen));
+    req_vlen = size; // size in bits
+    lmul = req_vlen / max_vlen;
+    if (lmul <= 1)
+    
+        asm volatile("vsetvli %0, %1, "vtype" , m1 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
+    }
+    else if (lmul == 2)
+    {
+        asm volatile("vsetvli %0, %1, "vtype" , m2 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
+    }
+    else if (lmul == 4)
+    {
+        asm volatile("vsetvli %0, %1, "vtype" , m4 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
+    }
+    else
+    {
+        printf("Unsupported LMUL value: %d\n", lmul);
+        return result; // return the output vector without any changes
+    }
+
+    asm volatile(" "vload" v8, (%0), v0.t" : : "r"(a));
+    asm volatile(" "vload" v9, (%0), v0.t" : : "r"(b));
+    asm volatile("vfadd.vv v10, v8, v9, v0.t");
+    asm volatile(" "vstore" v10, (%0), v0.t" : : "r"(result));  
+
+}
+
+// RISC-V cycle counter not working
+unsigned long read_cycles(void)
+{
+    unsigned long cycles;
+    cycles = clock();
+    return cycles;
+}
+
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <array_size>\n", argv[0]);
+        return 1;
+    }
+
+    int size = atoi(argv[1]);
+    if (size <= 0) {
+        fprintf(stderr, "Array size must be positive\n");
+        return 1;
+    }
+
+    // Allocate arrays
+    fp_t *a = (fp_t *)malloc(size * sizeof(fp_t));
+    fp_t *b = (fp_t *)malloc(size * sizeof(fp_t));
+    fp_t *result_scalar = (fp_t *)malloc(size * sizeof(fp_t));
+    fp_t *result_rvv = (fp_t *)malloc(size * sizeof(fp_t));
+
+    if (!a || !b || !result_scalar || !result_rvv) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 1;
+    }
+
+    // Initialize arrays with sample data
+    for (int i = 0; i < size; i++) {
+        a[i] = (fp_t)i * 1.5f;
+        b[i] = (fp_t)i * 2.3f;
+        result_scalar[i] = (fp_t)0;
+        result_rvv[i] = (fp_t)0;
+    }
+
+
+    double scalar_times[NUM_ITERATIONS];
+    double total_scalar_time = 0.0;
+
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        double start = read_cycles();
+        scalar_add(a, b, result_scalar, size);
+        double end = read_cycles();
+        
+        scalar_times[i] = (end - start) / 1e6; // Convert to milliseconds
+        total_scalar_time += scalar_times[i];
+    }
+
+    double mean_scalar_time = total_scalar_time / NUM_ITERATIONS;
+
+
+    double rvv_times[NUM_ITERATIONS];
+    double total_rvv_time = 0.0;
+
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        double start = read_cycles();
+        rvv_add(a, b, result_rvv, size);
+        double end = read_cycles();
+        
+        rvv_times[i] = (end - start) / 1e6; // Convert to milliseconds
+        total_rvv_time += rvv_times[i];
+        printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
+    }
+
+    double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
+
+    // === Comparison ===
+    printf("======================================\n");
+    printf("Performance Comparison\n");
+    printf("======================================\n");
+    printf("Scalar Mean Time: %.6f ms\n", mean_scalar_time);
+    printf("RVV Mean Time:    %.6f ms\n", mean_rvv_time);
+    
+    double speedup = mean_scalar_time / mean_rvv_time;
+    printf("Speedup (Scalar/RVV): %.2f x\n", speedup);
+
+    // Verify results match (optional)
+    int mismatch = 0;
+    for (int i = 0; i < size; i++) {
+        if (result_scalar[i] != result_rvv[i]) {
+            mismatch++;
+        }
+    }
+    
+    if (mismatch > 0) {
+        printf("\nWarning: Results differ in %d elements!\n", mismatch);
+    } else {
+        printf("\nVerification: Results match!\n");
+    }
+
+    // Cleanup
+    free(a);
+    free(b);
+    free(result_scalar);
+    free(result_rvv);
+
+    return 0;
+}
