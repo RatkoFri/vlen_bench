@@ -112,12 +112,12 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         printf("Unsupported LMUL value: %d\n", lmul);
         return; // return the output vector without any changes
     }
-
-    asm volatile(" "vload" v8, (%0)" : : "r"(a));
-    asm volatile(" "vload" v16, (%0)" : : "r"(b));
-    asm volatile("vfadd.vv v8, v8, v16");
-    asm volatile(" "vstore" v8, (%0)" : : "r"(result));  
-
+    for (int i = 0; i<100; i++){ // Dummy loop to avoid compiler optimizing out the asm code
+        asm volatile(" "vload" v8, (%0)" : : "r"(a));
+        asm volatile(" "vload" v16, (%0)" : : "r"(b));
+        asm volatile("vfadd.vv v8, v8, v16");
+        asm volatile(" "vstore" v8, (%0)" : : "r"(result));  
+    }
 }
 
 // RISC-V cycle counter not working
@@ -132,7 +132,7 @@ double timestamp()
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0 ;
 }
 
 double calculate_median(double *times, int n) {
