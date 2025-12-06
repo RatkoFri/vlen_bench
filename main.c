@@ -76,7 +76,7 @@ typedef float fp_t;
 // Macro for ceil function that returns integer
 #define CEIL_INT(x) ((int)((x) == (int)(x) ? (x) : (int)(x) + 1))
 
-#define NUM_ITERATIONS 5
+#define NUM_ITERATIONS 10
 
 // Scalar array addition
 void scalar_add(fp_t *a, fp_t *b, fp_t *result, int size) {
