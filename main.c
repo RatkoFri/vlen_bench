@@ -112,7 +112,7 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         printf("Unsupported LMUL value: %d\n", lmul);
         return; // return the output vector without any changes
     }
-    for (int i = 0; i<1000000; i++){ 
+    for (int i = 0; i<10000000; i++){ 
         asm volatile(" "vload" v8, (%0)" : : "r"(a));
         asm volatile(" "vload" v16, (%0)" : : "r"(b));
         asm volatile("vfadd.vv v8, v8, v16");
