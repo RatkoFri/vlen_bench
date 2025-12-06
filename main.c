@@ -134,7 +134,7 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     else
     {
         printf("Unsupported LMUL value: %d\n", lmul);
-        return result; // return the output vector without any changes
+        return; // return the output vector without any changes
     }
 
     printf("Using LMUL: %d\n", lmul);
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
         total_scalar_time += scalar_times[i];
     }
 
-    double mean_scalar_time = total_scalar_time / NUM_ITERATIONS;
+    // double mean_scalar_time = total_scalar_time / NUM_ITERATIONS;
 
 
     double rvv_times[NUM_ITERATIONS];
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
-    double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
+    //double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
 
     double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
     printf("Median RVV Time: %.6f ms, array size: %d\n", median_rvv_time, size);
