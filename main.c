@@ -128,6 +128,13 @@ unsigned long read_cycles(void)
     return cycles;
 }
 
+double timestamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+}
+
 double calculate_median(double *times, int n) {
     double *sorted = (double *)malloc(n * sizeof(double));
     memcpy(sorted, times, n * sizeof(double));
@@ -187,11 +194,11 @@ int main(int argc, char *argv[]) {
     double total_scalar_time = 0.0;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        long int start = read_cycles();
+        double start = timestamp();
         scalar_add(a, b, result_scalar, size);
-        long int end = read_cycles();
+        double end = timestamp();
         
-        scalar_times[i] = (double)(end - start); // Convert to milliseconds
+        scalar_times[i] = (end - start); // Convert to milliseconds
         total_scalar_time += scalar_times[i];
     }
 
@@ -202,11 +209,11 @@ int main(int argc, char *argv[]) {
     double total_rvv_time = 0.0;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        long int start = read_cycles();
+        double start = timestamp();
         rvv_add(a, b, result_rvv, size);
-        long int end = read_cycles();
+        double end = timestamp();
 
-        rvv_times[i] = (double)(end - start); // Convert to milliseconds
+        rvv_times[i] = (end - start); // Convert to milliseconds
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
