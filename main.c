@@ -128,6 +128,28 @@ unsigned long read_cycles(void)
     return cycles;
 }
 
+double calculate_median(double *times, int n) {
+    double *sorted = (double *)malloc(n * sizeof(double));
+    memcpy(sorted, times, n * sizeof(double));
+    // Simple bubble sort
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (sorted[j] > sorted[j+1]) {
+                double temp = sorted[j];
+                sorted[j] = sorted[j+1];
+                sorted[j+1] = temp;
+            }
+        }
+    }
+    double median;
+    if (n % 2 == 0) {
+        median = (sorted[n/2 - 1] + sorted[n/2]) / 2.0;
+    } else {
+        median = sorted[n/2];
+    }
+    free(sorted);
+    return median;
+}
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
