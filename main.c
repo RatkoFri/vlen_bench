@@ -187,11 +187,11 @@ int main(int argc, char *argv[]) {
     double total_scalar_time = 0.0;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        double start = read_cycles();
+        long int start = read_cycles();
         scalar_add(a, b, result_scalar, size);
-        double end = read_cycles();
+        long int end = read_cycles();
         
-        scalar_times[i] = (end - start); // Convert to milliseconds
+        scalar_times[i] = (double)(end - start); // Convert to milliseconds
         total_scalar_time += scalar_times[i];
     }
 
@@ -202,11 +202,11 @@ int main(int argc, char *argv[]) {
     double total_rvv_time = 0.0;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        double start = read_cycles();
+        long int start = read_cycles();
         rvv_add(a, b, result_rvv, size);
-        double end = read_cycles();
+        long int end = read_cycles();
 
-        rvv_times[i] = (end - start); // Convert to milliseconds
+        rvv_times[i] = (double)(end - start); // Convert to milliseconds
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
     }
     */
     double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
-    printf("Median RVV Time: %.6f ms, array size: %d\n", median_rvv_time, size);
+    printf("Median RVV Time: %.6f, array size: %d\n", median_rvv_time, size);
     // Verify results match (optional)
     int mismatch = 0;
     for (int i = 0; i < size; i++) {
