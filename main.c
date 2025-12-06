@@ -116,7 +116,6 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     int avlen, req_vlen, max_vlen; // Requested vector length in bits 
     req_vlen = -1;
     asm volatile("vsetvli %0, %1, "vtype", m1 "tail_mask" " : "=r"(max_vlen) : "r"(req_vlen));
-    printf("Max VLEN: %d bits\n", max_vlen);
     req_vlen = size; // size in bits
     int lmul = req_vlen / max_vlen;
     if (lmul <= 1)
