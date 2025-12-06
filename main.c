@@ -125,7 +125,7 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     }
     else if (lmul == 2)
     {
-        asm volatile("vsetvli %0, %1, "v type" , m2 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
+        asm volatile("vsetvli %0, %1, "vtype" , m2 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
     else if (lmul == 4)
     {
