@@ -43,7 +43,7 @@ CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FL
 
 TARGET_RVV = $(BUILD_DIR)/vec_add
 LDFLAGS =
-LDLIBS    := -lgtest -lgtest_main -pthread
+LDLIBS    := -lgtest -lgtest_main -pthread -lm
 
 # x86
 CCx86 = gcc
