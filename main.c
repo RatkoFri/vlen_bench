@@ -73,6 +73,8 @@ typedef float fp_t;
 
 #endif
 
+// Macro for ceil function that returns integer
+#define CEIL_INT(x) ((int)((x) == (int)(x) ? (x) : (int)(x) + 1))
 
 #define NUM_ITERATIONS 5
 
@@ -81,33 +83,6 @@ void scalar_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     for (int i = 0; i < size; i++) {
         result[i] = a[i] + b[i];
     }
-}
-
-// function for calculating median value
-double calculate_median(double *arr, int n) {
-    double median;
-    double *sorted = (double *)malloc(n * sizeof(double));
-    memcpy(sorted, arr, n * sizeof(double));
-    
-    // Simple bubble sort
-    for (int i = 0; i < n-1; i++) {
-        for (int j = 0; j < n-i-1; j++) {
-            if (sorted[j] > sorted[j+1]) {
-                double temp = sorted[j];
-                sorted[j] = sorted[j+1];
-                sorted[j+1] = temp;
-            }
-        }
-    }
-    
-    if (n % 2 == 0) {
-        median = (sorted[n/2 - 1] + sorted[n/2]) / 2.0;
-    } else {
-        median = sorted[n/2];
-    }
-    
-    free(sorted);
-    return median;
 }
 
 // RVV vector array addition using inline assembly
