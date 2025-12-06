@@ -209,7 +209,6 @@ int main(int argc, char *argv[]) {
         double end = read_cycles();
 
         rvv_times[i] = (end - start); // Convert to milliseconds
-        total_rvv_time += rvv_times[i];
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
@@ -226,6 +225,7 @@ int main(int argc, char *argv[]) {
     // Verify results match (optional)
     int mismatch = 0;
     for (int i = 0; i < size; i++) {
+        printf("Index %d: Scalar Result: "FP_FMT", RVV Result: "FP_FMT"\n", i, result_scalar[i], result_rvv[i]);
         if (result_scalar[i] != result_rvv[i]) {
             mismatch++;
         }
