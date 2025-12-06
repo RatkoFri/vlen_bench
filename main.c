@@ -137,6 +137,8 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         return result; // return the output vector without any changes
     }
 
+    printf("Using LMUL: %d\n", lmul);
+
     asm volatile(" "vload" v8, (%0)" : : "r"(a));
     asm volatile(" "vload" v16, (%0)" : : "r"(b));
     asm volatile("vfadd.vv v8, v8, v16");
@@ -193,7 +195,7 @@ int main(int argc, char *argv[]) {
         scalar_add(a, b, result_scalar, size);
         double end = read_cycles();
         
-        scalar_times[i] = (end - start) / 1e6; // Convert to milliseconds
+        scalar_times[i] = (end - start); // Convert to milliseconds
         total_scalar_time += scalar_times[i];
     }
 
@@ -207,25 +209,13 @@ int main(int argc, char *argv[]) {
         double start = read_cycles();
         rvv_add(a, b, result_rvv, size);
         double end = read_cycles();
-        
-        rvv_times[i] = (end - start) / 1e6; // Convert to milliseconds
+
+        rvv_times[i] = (end - start); // Convert to milliseconds
         total_rvv_time += rvv_times[i];
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
     double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
-
-    // === Comparison ===
-    /*
-    printf("======================================\n");
-    printf("Performance Comparison\n");
-    printf("======================================\n");
-    printf("Scalar Mean Time: %.6f ms\n", mean_scalar_time);
-    printf("RVV Mean Time:    %.6f ms\n", mean_rvv_time);
-    
-    double speedup = mean_scalar_time / mean_rvv_time;
-    printf("Speedup (Scalar/RVV): %.2f x\n", speedup);
-    */
 
     double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
     printf("Median RVV Time: %.6f ms, array size: %d\n", median_rvv_time, size);
