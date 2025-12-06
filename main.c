@@ -123,11 +123,11 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
 
         asm volatile("vsetvli %0, %1, "vtype" , m1 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
-    else if (lmul_f <= 2)
+    else if (lmul <= 2)
     {
         asm volatile("vsetvli %0, %1, "vtype" , m2 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
-    else if (lmul_f <= 4)
+    else if (lmul <= 4)
     {
         asm volatile("vsetvli %0, %1, "vtype" , m4 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
@@ -136,8 +136,6 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         printf("Unsupported LMUL value: %d\n", lmul);
         return; // return the output vector without any changes
     }
-
-    printf("Vector length set to %d elements\n", avlen);
 
     asm volatile(" "vload" v8, (%0)" : : "r"(a));
     asm volatile(" "vload" v16, (%0)" : : "r"(b));
