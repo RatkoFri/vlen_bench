@@ -178,8 +178,8 @@ int main(int argc, char *argv[]) {
 
     // Initialize arrays with sample data
     for (int i = 0; i < size; i++) {
-        a[i] = (fp_t)i * 1.5f;
-        b[i] = (fp_t)i * 2.3f;
+        a[i] = (fp_t)((i+1) * 1.5f);
+        b[i] = (fp_t)((i+1) * 2.3f);
         result_scalar[i] = (fp_t)0;
         result_rvv[i] = (fp_t)0;
     }
