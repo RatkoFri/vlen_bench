@@ -239,8 +239,9 @@ int main(int argc, char *argv[]) {
     
     if (mismatch > 0) {
         printf("\nWarning: Results differ in %d elements!\n", mismatch);
+        printf("\nSize: %d\n", size);
     } else {
-        printf("\nVerification: Results match!\n");
+        
     }
 
     // Cleanup
