@@ -136,6 +136,7 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         return; // return the output vector without any changes
     }
 
+    printf("Vector length set to %d elements\n", avlen);
 
     asm volatile(" "vload" v8, (%0)" : : "r"(a));
     asm volatile(" "vload" v16, (%0)" : : "r"(b));
