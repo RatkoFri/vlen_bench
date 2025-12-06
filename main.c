@@ -123,11 +123,11 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     {
         asm volatile("vsetvli %0, %1, "vtype" , m1 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
-    else if (lmul == 2)
+    else if (lmul <= 2)
     {
         asm volatile("vsetvli %0, %1, "vtype" , m2 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
-    else if (lmul == 4)
+    else if (lmul <= 4)
     {
         asm volatile("vsetvli %0, %1, "vtype" , m4 "tail_mask" " : "=r"(avlen) : "r"(req_vlen));
     }
@@ -137,10 +137,10 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         return result; // return the output vector without any changes
     }
 
-    asm volatile(" "vload" v0, (%0)" : : "r"(a));
-    asm volatile(" "vload" v8, (%0)" : : "r"(b));
-    asm volatile("vfadd.vv v0, v8, v0");
-    asm volatile(" "vstore" v0, (%0)" : : "r"(result));  
+    asm volatile(" "vload" v8, (%0)" : : "r"(a));
+    asm volatile(" "vload" v16, (%0)" : : "r"(b));
+    asm volatile("vfadd.vv v8, v8, v16");
+    asm volatile(" "vstore" v8, (%0)" : : "r"(result));  
 
 }
 
