@@ -226,7 +226,6 @@ int main(int argc, char *argv[]) {
     // Verify results match (optional)
     int mismatch = 0;
     for (int i = 0; i < size; i++) {
-        printf("Index %d: Scalar Result: "FP_FMT", RVV Result: "FP_FMT"\n", i, result_scalar[i], result_rvv[i]);
         if (result_scalar[i] != result_rvv[i]) {
             mismatch++;
         }
