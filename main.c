@@ -215,6 +215,12 @@ int main(int argc, char *argv[]) {
 
     //double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
 
+    // print times 
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+        printf("Iteration %d: Scalar Time: %.6f ms, RVV Time: %.6f ms, array size: %d\n", 
+               i + 1, scalar_times[i], rvv_times[i], size);
+    }
+
     double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
     printf("Median RVV Time: %.6f ms, array size: %d\n", median_rvv_time, size);
     // Verify results match (optional)
