@@ -93,7 +93,7 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
     req_vlen = -1;
     asm volatile("vsetvli %0, %1, "vtype", m1 "tail_mask" " : "=r"(max_vlen) : "r"(req_vlen));
     req_vlen = size; // size in bits
-    int lmul = (int)ceil((float)req_vlen / (float)max_vlen);
+    int lmul = CEIL_INT((float)req_vlen / (float)max_vlen);
     if (lmul <= 1)
     {   
 
