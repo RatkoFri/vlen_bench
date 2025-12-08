@@ -9,17 +9,17 @@ SRC_DIR = ./
 #CXXrisc = riscv64-unknown-elf-g++
 
 #orangepi gcc
-CCrisc = gcc
-CXXrisc = g++
+#CCrisc = gcc
+#CXXrisc = g++
 
 #orangepi clang
 #CCrisc = clang-19
 #CXXrisc = clang-19++
 
 #EPAC
-#CCrisc = clang
-#CXXrisc = riscv64-linux-gnu-g++
-#ARCH = rv64imacv
+CCrisc = clang
+CXXrisc = riscv64-linux-gnu-g++
+ARCH = rv64imacv
 
 ARCH = rv64gcv
 
@@ -30,16 +30,16 @@ RVV0_7 = USE_RVV0_7 # Enable RISC-V Vector Extension 0.7 support, set to 1 to en
 rvv = 1 # Enable RISC-V Vector Extension (RVV) support, set to 1 to enable
 
 #gcc orangepi
-CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH) -lm
-CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH) -Isrc
+#CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH) -lm
+#CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH) -Isrc
 
 #clang orangepi
 #CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -Rpass=loop-vectorize -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH)
 #CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Rpass=loop-vectorize -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -march=$(ARCH) -Isrc
 
 #clang EPAC
-#CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -march=rv64g -mepi -lm -g $(NO_AUTOVEC) -mcpu=avispado $(SDV_TRACE_INCL)  -fno-vectorize  -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -Drvv=$(rvv)
-#CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -march=$(ARCH) -Isrc
+CFLAGSrisc = -Wall -Wextra -O3 -std=gnu99 -march=rv64g -mepi -lm -g $(NO_AUTOVEC) -mcpu=avispado $(SDV_TRACE_INCL)  -fno-vectorize  -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -Drvv=$(rvv)
+CXXFLAGSrisc = -Wall -Wextra -O3 -std=c++11 -Drvv=$(rvv) -DDEBUG=$(DEBUG) -D$(FLOAT_TYPE) -D$(RVV0_7) -march=$(ARCH) -Isrc
 
 TARGET_RVV = $(BUILD_DIR)/vec_add
 LDFLAGS =

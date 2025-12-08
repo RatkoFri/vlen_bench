@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+//#include <time.h>
 
 #include <math.h>
 #include <stdio.h>
-
+#include <sys/time.h>
 
 // Usage:
 // Pass -DUSE_DOUBLE to the compiler to use double precision.
@@ -86,14 +86,17 @@ void scalar_add(fp_t *a, fp_t *b, fp_t *result, int size) {
 }
 
 // RVV vector array addition using inline assembly
-void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
+void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size, int vl) {
     // RVV assembly implementation
     // This uses RISC-V Vector extension instructions
     int avlen, req_vlen, max_vlen; // Requested vector length in bits 
     req_vlen = -1;
     asm volatile("vsetvli %0, %1, "vtype", m1 "tail_mask" " : "=r"(max_vlen) : "r"(req_vlen));
-    req_vlen = size; // size in bits
+    req_vlen = vl; // size in bits
     int lmul = CEIL_INT((float)req_vlen / (float)max_vlen);
+    
+    
+    
     if (lmul <= 1)
     {   
 
@@ -112,11 +115,13 @@ void rvv_add(fp_t *a, fp_t *b, fp_t *result, int size) {
         printf("Unsupported LMUL value: %d\n", lmul);
         return; // return the output vector without any changes
     }
-    for (int i = 0; i<10000000; i++){ 
-        asm volatile(" "vload" v8, (%0)" : : "r"(a));
-        asm volatile(" "vload" v16, (%0)" : : "r"(b));
+    //printf("Requested VL: %d bits, Max VL: %d bits, Selected AVLEN: %d bits, LMUL: %d\n", req_vlen, max_vlen, avlen, lmul);
+
+    for (int i = 0; i<size; i+= avlen){ 
+        asm volatile(" "vload" v8, (%0)" : : "r"(a+i));
+        asm volatile(" "vload" v16, (%0)" : : "r"(b+i));
         asm volatile("vfadd.vv v8, v8, v16");
-        asm volatile(" "vstore" v8, (%0)" : : "r"(result));  
+        asm volatile(" "vstore" v8, (%0)" : : "r"(result+i));  
     }
 }
 
@@ -160,15 +165,18 @@ double calculate_median(double *times, int n) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s <array_size>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <vl_size>\n", argv[0]);
         return 1;
     }
 
-    int size = atoi(argv[1]);
-    if (size <= 0) {
-        fprintf(stderr, "Array size must be positive\n");
+    int vl = atoi(argv[1]);
+    if (vl <= 0) {
+        fprintf(stderr, "Vector length must be positive\n");
         return 1;
     }
+
+    int size = 32 * 512; // 16K elements
+
 
     // Allocate arrays
     fp_t *a = (fp_t *)malloc(size * sizeof(fp_t));
@@ -180,7 +188,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Memory allocation failed\n");
         return 1;
     }
-
+    
     // Initialize arrays with sample data
     for (int i = 0; i < size; i++) {
         a[i] = (fp_t)((i+1) * 1.5f);
@@ -189,7 +197,8 @@ int main(int argc, char *argv[]) {
         result_rvv[i] = (fp_t)0;
     }
 
-
+    printf("Array size: %d, Data type: %s\n", size, FP_TYPE);
+    
     double scalar_times[NUM_ITERATIONS];
     double total_scalar_time = 0.0;
 
@@ -201,33 +210,36 @@ int main(int argc, char *argv[]) {
         scalar_times[i] = (end - start); // Convert to milliseconds
         total_scalar_time += scalar_times[i];
     }
-
-    // double mean_scalar_time = total_scalar_time / NUM_ITERATIONS;
-
-
+    
+    double mean_scalar_time = total_scalar_time / NUM_ITERATIONS;
+    printf("Mean Scalar Time: %.6f, array size: %d\n", mean_scalar_time, size);
+   
     double rvv_times[NUM_ITERATIONS];
     double total_rvv_time = 0.0;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         double start = timestamp();
-        rvv_add(a, b, result_rvv, size);
+        for(int repeat=0; repeat<1000; repeat++) // repeat to get measurable time
+            rvv_add(a, b, result_rvv, size, vl); // vl in bits
         double end = timestamp();
-
         rvv_times[i] = (end - start); // Convert to milliseconds
         //printf("Iteration %d: %.6f ms\n", i + 1, rvv_times[i]);
     }
 
-    //double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
-
+    
+    double mean_rvv_time = total_rvv_time / NUM_ITERATIONS;
+    //printf("Mean RVV Time: %.6f, array size: %d\n", mean_rvv_time, size);
+    
     // print times 
-    /*
+    
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        printf("Iteration %d: Scalar Time: %.6f ms, RVV Time: %.6f ms, array size: %d\n", 
-               i + 1, scalar_times[i], rvv_times[i], size);
+        //printf("Iteration %d: Scalar Time: %.6f ms, RVV Time: %.6f ms, array size: %d\n", 
+        //       i + 1, scalar_times[i], rvv_times[i], size);
     }
-    */
+    
     double median_rvv_time = calculate_median(rvv_times, NUM_ITERATIONS);
-    printf("Median RVV Time: %.6f, array size: %d\n", median_rvv_time, size);
+    printf("Median RVV Time: %.6f, vector size: %d\n", median_rvv_time, vl);
+    
     // Verify results match (optional)
     int mismatch = 0;
     for (int i = 0; i < size; i++) {
@@ -242,12 +254,12 @@ int main(int argc, char *argv[]) {
     } else {
         
     }
-
+    
     // Cleanup
     free(a);
     free(b);
     free(result_scalar);
     free(result_rvv);
-
+    
     return 0;
 }

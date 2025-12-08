@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Array of parameters
-params=("2" "4" "8" "10" "12" "16" "32")
+params=("4" "8" "16" "32" "64" "128" "256" "512" "1024")
 
 # Loop through parameters and run script
 for param in "${params[@]}"; do
